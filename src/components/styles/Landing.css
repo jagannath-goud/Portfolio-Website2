@@ -103,9 +103,10 @@
   position: absolute;
   max-width: 1920px;
   max-height: 1080px;
-  transform: translateX(-50%);
   width: 100%;
-  left: 50%;
+  left: 0;
+  right: 0;
+  margin: auto;
   z-index: 0;
   bottom: 50px;
   pointer-events: inherit;
@@ -212,9 +213,11 @@
   text-transform: uppercase;
   letter-spacing: 2px;
 }
-.landing-h2-info-1 {
+.landing-role {
   position: absolute;
   top: 0;
+  left: 0;
+  width: 100%;
 }
 h2.landing-info-h2 {
   color: #c481ff;
@@ -225,10 +228,7 @@ h2.landing-info-h2 {
   font-weight: 600;
   position: relative;
   margin-left: -5px;
-}
-.landing-h2-2 {
-  position: absolute;
-  top: 0;
+  height: 1.2em;
 }
 .landing-info-h2::after {
   content: "";

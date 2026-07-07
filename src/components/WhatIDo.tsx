@@ -87,24 +87,23 @@ const WhatIDo = () => {
             <div className="what-corner"></div>
 
             <div className="what-content-in">
-              <h3>DEVELOP</h3>
+              <h3>Software Development</h3>
               <h4>Description</h4>
               <p>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quas
-                quia aliquid laboriosam ducimus sit molestiae.
+                Building responsive web interfaces, robust backend APIs, and IoT integrations that connect physical hardware with secure cloud platforms.
               </p>
               <h5>Skillset & tools</h5>
               <div className="what-content-flex">
-                <div className="what-tags">JavaScript</div>
-                <div className="what-tags">TypeScript</div>
-                <div className="what-tags">Three.js</div>
                 <div className="what-tags">React</div>
-                <div className="what-tags">Css</div>
+                <div className="what-tags">TypeScript</div>
                 <div className="what-tags">Node.js</div>
+                <div className="what-tags">Supabase</div>
+                <div className="what-tags">IoT</div>
+                <div className="what-tags">JavaScript</div>
+                <div className="what-tags">Three.js</div>
+                <div className="what-tags">CSS</div>
                 <div className="what-tags">Next.js</div>
                 <div className="what-tags">Express.js</div>
-                <div className="what-tags">PHP</div>
-                <div className="what-tags">MySql</div>
               </div>
               <div className="what-arrow"></div>
             </div>
@@ -128,22 +127,19 @@ const WhatIDo = () => {
             </div>
             <div className="what-corner"></div>
             <div className="what-content-in">
-              <h3>DESIGN</h3>
+              <h3>Startup & Product</h3>
               <h4>Description</h4>
               <p>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quas
-                quia aliquid laboriosam ducimus sit molestiae
+                Translating concepts into functional MVPs, orchestrating operational scaling structures, and driving go-to-market strategies.
               </p>
               <h5>Skillset & tools</h5>
               <div className="what-content-flex">
-                <div className="what-tags">Blender</div>
-                <div className="what-tags">Zbrush</div>
-                <div className="what-tags">UI Design</div>
-                <div className="what-tags">Motion</div>
-                <div className="what-tags">Rigging</div>
-                <div className="what-tags">3D Animation</div>
-                <div className="what-tags">Character Design</div>
-                <div className="what-tags">Modelling</div>
+                <div className="what-tags">MVPs</div>
+                <div className="what-tags">Operational Scaling</div>
+                <div className="what-tags">Marketing</div>
+                <div className="what-tags">UI/UX Design</div>
+                <div className="what-tags">Product Strategy</div>
+                <div className="what-tags">Business Development</div>
               </div>
               <div className="what-arrow"></div>
             </div>

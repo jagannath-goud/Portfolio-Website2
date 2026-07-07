@@ -2,11 +2,10 @@ import "./styles/Career.css";
 
 const Career = () => {
   return (
-    <div className="career-section section-container">
+    <div className="career-section section-container" id="smartprinter">
       <div className="career-container">
         <h2>
-          My career <span>&</span>
-          <br /> experience
+          Journey
         </h2>
         <div className="career-info">
           <div className="career-timeline">
@@ -15,43 +14,37 @@ const Career = () => {
           <div className="career-info-box">
             <div className="career-info-in">
               <div className="career-role">
-                <h4>Position In Company</h4>
-                <h5>Company Name</h5>
+                <h4>B.Tech Student</h4>
+                <h5>Computer Science & Engineering</h5>
               </div>
-              <h3>20XX</h3>
+              <h3>2024 - PRESENT</h3>
             </div>
             <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Enim
-              labore sit non ipsum temporibus quidem, deserunt eaque officiis
-              mollitia ratione suscipit repellat.
+              Acquiring foundational knowledge in computer science, software design patterns, database architecture, and IoT systems while researching automation.
             </p>
           </div>
           <div className="career-info-box">
             <div className="career-info-in">
               <div className="career-role">
-                <h4>Position In Company</h4>
-                <h5>Company Name</h5>
+                <h4>Founder & CEO</h4>
+                <h5>SmartPrinter</h5>
               </div>
-              <h3>20XX</h3>
+              <h3>2025 - PRESENT</h3>
             </div>
             <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Enim
-              labore sit non ipsum temporibus quidem, deserunt eaque officiis
-              mollitia ratione suscipit repellat.
+              Launched SmartPrinter, building a hardware-integrated self-service printer platform, coordinating mechanical automation, cloud API systems, and product development.
             </p>
           </div>
           <div className="career-info-box">
             <div className="career-info-in">
               <div className="career-role">
-                <h4>Position In Company</h4>
-                <h5>Company Name</h5>
+                <h4>Scaling Operations</h4>
+                <h5>SmartPrinter</h5>
               </div>
               <h3>NOW</h3>
             </div>
             <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Enim
-              labore sit non ipsum temporibus quidem, deserunt eaque officiis
-              mollitia ratione suscipit repellat.
+              Scaling print-stations across educational institutions and offices, implementing secure cloud endpoints, and expanding the franchise network.
             </p>
           </div>
         </div>

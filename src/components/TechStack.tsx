@@ -131,7 +131,7 @@ const TechStack = () => {
     const handleScroll = () => {
       const scrollY = window.scrollY || document.documentElement.scrollTop;
       const threshold = document
-        .getElementById("work")!
+        .getElementById("projects")!
         .getBoundingClientRect().top;
       setIsActive(scrollY > threshold);
     };
@@ -168,7 +168,7 @@ const TechStack = () => {
 
   return (
     <div className="techstack">
-      <h2> My Techstack</h2>
+      <h2>Tech Stack</h2>
 
       <Canvas
         shadows
