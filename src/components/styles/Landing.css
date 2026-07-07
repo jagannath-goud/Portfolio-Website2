@@ -215,14 +215,6 @@
   text-transform: uppercase;
   letter-spacing: 2px;
 }
-.landing-role {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  white-space: nowrap;
-  text-align: inherit;
-}
 h2.landing-info-h2 {
   color: #c481ff;
   font-size: 42px;
@@ -231,8 +223,21 @@ h2.landing-info-h2 {
   font-family: "Geist", sans-serif;
   font-weight: 600;
   position: relative;
-  height: 1.2em;
-  text-align: inherit;
+  display: flex;
+  justify-content: center;
+}
+.landing-h2-1,
+.landing-h2-2,
+.landing-h2-info,
+.landing-h2-info-1 {
+  white-space: nowrap;
+}
+.landing-h2-2,
+.landing-h2-info-1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
 }
 .landing-info-h2::after {
   content: "";
@@ -322,6 +327,17 @@ h2.landing-info-h2 {
     right: auto;
     left: 66%;
     width: 500px;
+  }
+  .landing-info h3 {
+    text-align: left;
+  }
+  .landing-info h2 {
+    justify-content: flex-start;
+    margin-left: 20px;
+  }
+  h2.landing-info-h2 {
+    justify-content: flex-start;
+    margin-left: -5px;
   }
 }
 @media screen and (min-width: 1200px) {
