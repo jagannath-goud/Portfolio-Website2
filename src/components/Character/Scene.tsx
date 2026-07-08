@@ -52,34 +52,19 @@ const Scene = () => {
 
       const light = setLighting(scene);
       let progress = setProgress((value) => setLoading(value));
-      // Load original animations first
-      const animationsLoader = new GLTFLoader();
-      const loadAnimations = () => {
-        return new Promise<THREE.AnimationClip[]>((resolve) => {
-          animationsLoader.load(
-            "/models/animations.glb",
-            (gltf: any) => {
-              resolve(gltf.animations);
-            },
-            undefined,
-            (err: any) => {
-              console.error("Failed to load animations reference:", err);
-              resolve([]);
-            }
-          );
-        });
-      };
+      const { loadCharacter } = setCharacter(renderer, scene, camera);
+      loadCharacter().then((gltf) => {
+        if (gltf) {
+          const character = gltf.scene;
+          setChar(character);
+          scene.add(character);
 
-      loadAnimations().then((originalAnimations) => {
-        const { loadCharacter } = setCharacter(renderer, scene, camera);
-        loadCharacter().then((gltf) => {
-          if (gltf) {
-            const character = gltf.scene;
-            setChar(character);
-            scene.add(character);
+          const isNewModel = character.getObjectByName("Head") !== undefined;
 
-            const isNewModel = character.getObjectByName("Head") !== undefined;
+          // Check if animations are embedded in the loaded character model (e.g. original model)
+          const hasAnimations = gltf.animations && gltf.animations.length > 0;
 
+          const initModelWithAnimations = (originalAnimations: THREE.AnimationClip[]) => {
             const animations = setAnimations(gltf, originalAnimations);
             hoverDivRef.current && animations.hover(gltf, hoverDivRef.current);
             mixer = animations.mixer;
@@ -171,8 +156,27 @@ const Scene = () => {
             window.addEventListener("resize", () =>
               handleResize(renderer, camera, canvasDiv, character)
             );
+          };
+
+          if (hasAnimations) {
+            // Original model: use embedded animations directly (no extra file required!)
+            initModelWithAnimations(gltf.animations);
+          } else {
+            // Avaturn model: load external animations clip reference file as fallback
+            const animationsLoader = new GLTFLoader();
+            animationsLoader.load(
+              "/models/animations.glb",
+              (animGltf: any) => {
+                initModelWithAnimations(animGltf.animations);
+              },
+              undefined,
+              (err: any) => {
+                console.error("Failed to load fallback animations reference:", err);
+                initModelWithAnimations([]);
+              }
+            );
           }
-        });
+        }
       });
 
       let mouse = { x: 0, y: 0 },
