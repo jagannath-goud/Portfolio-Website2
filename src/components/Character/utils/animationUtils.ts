@@ -2,54 +2,120 @@ import * as THREE from "three";
 import { GLTF } from "three-stdlib";
 import { eyebrowBoneNames, typingBoneNames } from "../../../data/boneData";
 
-const setAnimations = (gltf: GLTF) => {
+const boneNameMap: { [key: string]: string } = {
+  "spine006": "Head",
+  "spine.006": "Head",
+  "spine005": "Neck",
+  "spine.005": "Neck",
+  "forearmL": "LeftForeArm",
+  "forearm.L": "LeftForeArm",
+  "forearmR": "RightForeArm",
+  "forearm.R": "RightForeArm",
+  "handL": "LeftHand",
+  "hand.L": "LeftHand",
+  "handR": "RightHand",
+  "hand.R": "RightHand",
+  "upper_armL": "LeftArm",
+  "upper_arm.L": "LeftArm",
+  "upper_armR": "RightArm",
+  "upper_arm.R": "RightArm",
+  "thighL": "LeftUpLeg",
+  "thigh.L": "LeftUpLeg",
+  "thighR": "RightUpLeg",
+  "thigh.R": "RightUpLeg",
+  "shinL": "LeftLeg",
+  "shin.L": "LeftLeg",
+  "shinR": "RightLeg",
+  "shin.R": "RightLeg",
+  "footL": "LeftFoot",
+  "foot.L": "LeftFoot",
+  "footR": "RightFoot",
+  "foot.R": "RightFoot"
+};
+
+function retargetClip(clip: THREE.AnimationClip): THREE.AnimationClip {
+  const retargetedTracks = clip.tracks.map((track) => {
+    let trackName = track.name;
+    Object.keys(boneNameMap).forEach((oldName) => {
+      const newName = boneNameMap[oldName];
+      const regex = new RegExp(`\\b${oldName.replace(".", "\\.")}\\b`, "g");
+      trackName = trackName.replace(regex, newName);
+    });
+    const newTrack = track.clone();
+    newTrack.name = trackName;
+    return newTrack;
+  });
+  return new THREE.AnimationClip(clip.name, clip.duration, retargetedTracks);
+}
+
+const setAnimations = (gltf: GLTF, sourceAnimations?: THREE.AnimationClip[]) => {
   let character = gltf.scene;
   let mixer = new THREE.AnimationMixer(character);
-  if (gltf.animations) {
-    const introClip = gltf.animations.find(
+  
+  // Check if this is the new model with the 'Head' bone (Avaturn skeleton)
+  const isNewModel = character.getObjectByName("Head") !== undefined;
+
+  const originalAnimations = sourceAnimations || gltf.animations || [];
+  const processedAnimations = isNewModel
+    ? originalAnimations.map(clip => retargetClip(clip))
+    : originalAnimations;
+
+  if (processedAnimations.length > 0) {
+    const introClip = processedAnimations.find(
       (clip) => clip.name === "introAnimation"
     );
-    const introAction = mixer.clipAction(introClip!);
-    introAction.setLoop(THREE.LoopOnce, 1);
-    introAction.clampWhenFinished = true;
-    introAction.play();
+    if (introClip) {
+      const introAction = mixer.clipAction(introClip);
+      introAction.setLoop(THREE.LoopOnce, 1);
+      introAction.clampWhenFinished = true;
+      introAction.play();
+    }
+
     const clipNames = ["key1", "key2", "key5", "key6"];
     clipNames.forEach((name) => {
-      const clip = THREE.AnimationClip.findByName(gltf.animations, name);
+      const clip = processedAnimations.find((anim) => anim.name === name);
       if (clip) {
         const action = mixer?.clipAction(clip);
         action!.play();
         action!.timeScale = 1.2;
-      } else {
-        console.error(`Animation "${name}" not found`);
       }
     });
+
     let typingAction: THREE.AnimationAction | null = null;
-    typingAction = createBoneAction(gltf, mixer, "typing", typingBoneNames);
+    typingAction = createBoneAction(mixer, "typing", typingBoneNames, processedAnimations, isNewModel);
     if (typingAction) {
       typingAction.enabled = true;
       typingAction.play();
       typingAction.timeScale = 1.2;
     }
   }
+
   function startIntro() {
-    const introClip = gltf.animations.find(
+    if (processedAnimations.length === 0) return;
+    const introClip = processedAnimations.find(
       (clip) => clip.name === "introAnimation"
     );
-    const introAction = mixer.clipAction(introClip!);
-    introAction.clampWhenFinished = true;
-    introAction.reset().play();
+    if (introClip) {
+      const introAction = mixer.clipAction(introClip);
+      introAction.clampWhenFinished = true;
+      introAction.reset().play();
+    }
     setTimeout(() => {
-      const blink = gltf.animations.find((clip) => clip.name === "Blink");
-      mixer.clipAction(blink!).play().fadeIn(0.5);
+      const blink = processedAnimations.find((clip) => clip.name === "Blink");
+      if (blink) {
+        mixer.clipAction(blink).play().fadeIn(0.5);
+      }
     }, 2500);
   }
-  function hover(gltf: GLTF, hoverDiv: HTMLDivElement) {
+
+  function hover(_gltf: GLTF, hoverDiv: HTMLDivElement) {
+    if (processedAnimations.length === 0) return;
     let eyeBrowUpAction = createBoneAction(
-      gltf,
       mixer,
       "browup",
-      eyebrowBoneNames
+      eyebrowBoneNames,
+      processedAnimations,
+      isNewModel
     );
     let isHovering = false;
     if (eyeBrowUpAction) {
@@ -80,22 +146,27 @@ const setAnimations = (gltf: GLTF) => {
       hoverDiv.removeEventListener("mouseleave", onLeaveFace);
     };
   }
+
   return { mixer, startIntro, hover };
 };
 
 const createBoneAction = (
-  gltf: GLTF,
   mixer: THREE.AnimationMixer,
   clip: string,
-  boneNames: string[]
+  boneNames: string[],
+  processedAnimations: THREE.AnimationClip[],
+  isNewModel: boolean
 ): THREE.AnimationAction | null => {
-  const AnimationClip = THREE.AnimationClip.findByName(gltf.animations, clip);
+  const AnimationClip = processedAnimations.find((anim) => anim.name === clip);
   if (!AnimationClip) {
-    console.error(`Animation "${clip}" not found in GLTF file.`);
+    console.error(`Animation "${clip}" not found.`);
     return null;
   }
 
-  const filteredClip = filterAnimationTracks(AnimationClip, boneNames);
+  const mappedBoneNames = isNewModel
+    ? boneNames.map(name => boneNameMap[name] || name)
+    : boneNames;
+  const filteredClip = filterAnimationTracks(AnimationClip, mappedBoneNames);
 
   return mixer.clipAction(filteredClip);
 };

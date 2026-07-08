@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { GLTFLoader } from "three-stdlib";
 import setCharacter from "./utils/character";
 import setLighting from "./utils/lighting";
 import { useLoading } from "../../context/LoadingProvider";
@@ -51,28 +52,127 @@ const Scene = () => {
 
       const light = setLighting(scene);
       let progress = setProgress((value) => setLoading(value));
-      const { loadCharacter } = setCharacter(renderer, scene, camera);
-
-      loadCharacter().then((gltf) => {
-        if (gltf) {
-          const animations = setAnimations(gltf);
-          hoverDivRef.current && animations.hover(gltf, hoverDivRef.current);
-          mixer = animations.mixer;
-          let character = gltf.scene;
-          setChar(character);
-          scene.add(character);
-          headBone = character.getObjectByName("spine006") || null;
-          screenLight = character.getObjectByName("screenlight") || null;
-          progress.loaded().then(() => {
-            setTimeout(() => {
-              light.turnOnLights();
-              animations.startIntro();
-            }, 2500);
-          });
-          window.addEventListener("resize", () =>
-            handleResize(renderer, camera, canvasDiv, character)
+      // Load original animations first
+      const animationsLoader = new GLTFLoader();
+      const loadAnimations = () => {
+        return new Promise<THREE.AnimationClip[]>((resolve) => {
+          animationsLoader.load(
+            "/models/animations.glb",
+            (gltf: any) => {
+              resolve(gltf.animations);
+            },
+            undefined,
+            (err: any) => {
+              console.error("Failed to load animations reference:", err);
+              resolve([]);
+            }
           );
-        }
+        });
+      };
+
+      loadAnimations().then((originalAnimations) => {
+        const { loadCharacter } = setCharacter(renderer, scene, camera);
+        loadCharacter().then((gltf) => {
+          if (gltf) {
+            const character = gltf.scene;
+            setChar(character);
+            scene.add(character);
+
+            const isNewModel = character.getObjectByName("Head") !== undefined;
+
+            const animations = setAnimations(gltf, originalAnimations);
+            hoverDivRef.current && animations.hover(gltf, hoverDivRef.current);
+            mixer = animations.mixer;
+
+            if (isNewModel) {
+              // Avaturn model: target "Head" bone, no mesh hiding, no transparent plane
+              headBone = character.getObjectByName("Head") || null;
+              screenLight = character.getObjectByName("screenlight") || null;
+            } else {
+              // Original model: target "spine006" bone, hide original head meshes, attach transparent face cutout
+              headBone = character.getObjectByName("spine006") || 
+                         character.getObjectByName("spine_006") || 
+                         character.getObjectByName("spine.006") || 
+                         null;
+              
+              if (!headBone) {
+                character.traverse((c) => {
+                  const cName = c.name.toLowerCase();
+                  if (cName.includes("spine") && cName.includes("006")) {
+                    headBone = c;
+                  }
+                });
+              }
+
+              screenLight = character.getObjectByName("screenlight") || null;
+
+              // Hide original mouth/teeth/glasses, but keep head/hair/eyes/ears visible for solid 3D backing
+              character.traverse((child: any) => {
+                if (child.isMesh) {
+                  const mesh = child as THREE.Mesh;
+                  child.castShadow = true;
+                  child.receiveShadow = true;
+                  mesh.frustumCulled = true;
+
+                  const name = child.name.toLowerCase();
+                  if (name === "userfacecutout") return;
+                  if (
+                    name.includes("teeth") ||
+                    name.includes("glasses") ||
+                    name.includes("beard") ||
+                    name.includes("mouth")
+                  ) {
+                    child.visible = false;
+                  }
+                }
+              });
+
+              // Apply your face texture directly to the head mesh material as its skin!
+              const headMesh = character.getObjectByName("Cube_002") || 
+                               character.getObjectByName("Cube.002") || 
+                               null;
+              
+              if (headMesh && (headMesh as THREE.Mesh).isMesh) {
+                const mesh = headMesh as THREE.Mesh;
+                const originalMaterial = mesh.material as THREE.MeshStandardMaterial;
+                const faceMaterial = originalMaterial.clone();
+                
+                // Set skin base color matching your cartoon avatar's skin tone
+                faceMaterial.color.set("#d4956a");
+                
+                const textureLoader = new THREE.TextureLoader();
+                textureLoader.load(
+                  "/images/avatar.png",
+                  (texture) => {
+                    texture.colorSpace = THREE.SRGBColorSpace;
+                    
+                    // Align the face features texture map
+                    texture.wrapS = THREE.ClampToEdgeWrapping;
+                    texture.wrapT = THREE.ClampToEdgeWrapping;
+                    
+                    faceMaterial.map = texture;
+                    faceMaterial.needsUpdate = true;
+                    mesh.material = faceMaterial;
+                  },
+                  undefined,
+                  (err) => {
+                    console.error("Failed to load avatar face texture:", err);
+                  }
+                );
+              }
+            }
+
+            progress.loaded().then(() => {
+              setTimeout(() => {
+                light.turnOnLights();
+                animations.startIntro();
+              }, 2500);
+            });
+            window.addEventListener("resize", () =>
+              handleResize(renderer, camera, canvasDiv, character)
+            );
+          }
+        });
       });
 
       let mouse = { x: 0, y: 0 },
